@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -34,5 +35,20 @@ public class ClientService {
         Integer results = restTemplate.getForObject(url, Integer.class);
         return CompletableFuture.completedFuture(results);
     }
+
+    @Async
+    public CompletableFuture<List<Integer>> getPrimes(String host, int lowerLimit, int upperLimit) throws InterruptedException {
+        String url = host + "/primesNumbers?lower=" + lowerLimit + "&upper=" + upperLimit;
+        List<Integer> primeNumbers = restTemplate.getForObject(url, List.class);
+        return CompletableFuture.completedFuture(primeNumbers);
+    }
+
+    @Async
+    public CompletableFuture<Integer> getVowels(String host, String text) throws InterruptedException {
+        String url = host + "/countVowels?text=" + text;
+        Integer results = restTemplate.getForObject(url, Integer.class);
+        return CompletableFuture.completedFuture(results);
+    }
+
 
 }
