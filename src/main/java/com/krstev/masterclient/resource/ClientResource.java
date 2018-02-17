@@ -19,7 +19,7 @@ import java.util.concurrent.ExecutionException;
 
 /**
  * @author fkrstev
- * Created on 14-Feb-18
+ *         Created on 14-Feb-18
  */
 @RestController
 @EnableFeignClients
@@ -37,6 +37,8 @@ public class ClientResource {
     public Integer serviceInfo() throws Exception {
         List<ServiceInstance> instances = client.getInstances("SERVICE");
 
+        logger.info(instances.toString());
+
         List<CompletableFuture<Integer>> list = new LinkedList<>();
         instances.forEach(instance -> {
             try {
@@ -46,14 +48,20 @@ public class ClientResource {
             }
         });
 
-        return list.stream().mapToInt(i -> {
+        int sum = list.stream().mapToInt(i -> {
             try {
-                return i.get();
+                int r = i.get();
+                logger.info("Result : " + r);
+                return r;
             } catch (InterruptedException | ExecutionException e) {
                 logger.error(e.getLocalizedMessage());
                 throw new RuntimeException();
             }
         }).sum();
+
+        logger.info("Sum : " + sum);
+
+        return sum;
     }
 
     @RequestMapping("/primeNumbers")

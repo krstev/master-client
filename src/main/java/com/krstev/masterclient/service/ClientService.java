@@ -32,7 +32,9 @@ public class ClientService {
     @Async
     public CompletableFuture<Integer> getInt(String host) throws InterruptedException {
         String url = host + "/nextInt";
+        logger.info("Url : " + url);
         Integer results = restTemplate.getForObject(url, Integer.class);
+        logger.info("Result from service " + url + " is " + results);
         return CompletableFuture.completedFuture(results);
     }
 
