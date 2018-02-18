@@ -1,5 +1,6 @@
 package com.krstev.masterclient.resource;
 
+import com.krstev.masterclient.models.PrimeNumbers;
 import com.krstev.masterclient.service.ClientService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,7 +20,7 @@ import java.util.concurrent.ExecutionException;
 
 /**
  * @author fkrstev
- *         Created on 14-Feb-18
+ * Created on 14-Feb-18
  */
 @RestController
 @EnableFeignClients
@@ -70,7 +71,7 @@ public class ClientResource {
 
         int r = upperLimit / instances.size();
 
-        List<CompletableFuture<List<Integer>>> list = new LinkedList<>();
+        List<CompletableFuture<PrimeNumbers>> list = new LinkedList<>();
         int start = 0;
         int end = r;
 
@@ -83,7 +84,7 @@ public class ClientResource {
         List<Integer> result = new LinkedList<>();
         list.forEach(res -> {
             try {
-                result.addAll(res.get());
+                result.addAll(res.get().getPrimeNumbers());
             } catch (InterruptedException | ExecutionException e) {
                 e.printStackTrace();
             }
