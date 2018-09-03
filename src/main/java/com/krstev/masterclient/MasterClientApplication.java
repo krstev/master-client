@@ -14,20 +14,20 @@ import java.util.concurrent.Executor;
 @EnableAsync
 public class MasterClientApplication {
 
-    public static void main(String[] args) {
-        SpringApplication.run(MasterClientApplication.class, args);
-    }
+  public static void main(String[] args) {
+    SpringApplication.run(MasterClientApplication.class, args);
+  }
 
-    @Bean
-    public Executor asyncExecutor() {
-        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(6);
-        executor.setMaxPoolSize(6);
-        executor.setQueueCapacity(500);
-        executor.setThreadNamePrefix("Master-");
-        executor.initialize();
-        return executor;
-    }
+  @Bean
+  public Executor asyncExecutor() {
+    ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+    executor.setCorePoolSize(3);
+    executor.setMaxPoolSize(3);
+    executor.setQueueCapacity(500);
+    executor.setThreadNamePrefix("Master-");
+    executor.initialize();
+    return executor;
+  }
 
 
 }

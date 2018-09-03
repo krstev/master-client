@@ -15,9 +15,7 @@ import org.springframework.web.client.RestTemplate;
 import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executor;
+import java.util.concurrent.*;
 
 import static java.util.concurrent.CompletableFuture.*;
 
@@ -170,15 +168,15 @@ public interface ClientService {
 
     List<String> results = Collections.synchronizedList(new ArrayList<>());
 
-    CompletableFuture<Void> timeout = runAsync(() -> timeout(TIMEOUT_MILLISECONDS));
+    CompletableFuture<Void> timeout = runAsync(() -> timeout(TIMEOUT_MILLISECONDS), getExecutor());
 
     anyOf(
+        timeout,
         allOf(
-            runAsync(() -> results.add(searchWeb(search, V2APIVERSION))),
-            runAsync(() -> results.add(searchImage(search, V2APIVERSION))),
-            runAsync(() -> results.add(searchVideo(search, V2APIVERSION)))
-        ),
-        timeout
+            runAsync(() -> results.add(searchWeb(search, V2APIVERSION)), getExecutor()),
+            runAsync(() -> results.add(searchImage(search, V2APIVERSION)), getExecutor()),
+            runAsync(() -> results.add(searchVideo(search, V2APIVERSION)), getExecutor())
+        )
     ).get();
 
     logEnd(startTime);
@@ -191,16 +189,17 @@ public interface ClientService {
 
     List<String> results = Collections.synchronizedList(new ArrayList<>());
 
-    CompletableFuture<Void> timeout = runAsync(() -> timeout(TIMEOUT_MILLISECONDS));
+    CompletableFuture<Void> timeout = runAsync(() -> timeout(TIMEOUT_MILLISECONDS), getExecutor());
 
     anyOf(
+        timeout,
         allOf(
-            anyOf(runAsync(() -> results.add(searchWeb(search, V2APIVERSION))), runAsync(() -> results.add(searchWeb(search, V2APIVERSION)))),
-            anyOf(runAsync(() -> results.add(searchImage(search, V2APIVERSION))), runAsync(() -> results.add(searchImage(search, V2APIVERSION)))),
-            anyOf(runAsync(() -> results.add(searchVideo(search, V2APIVERSION))), runAsync(() -> results.add(searchVideo(search, V2APIVERSION))))
-        ),
-        timeout
+            anyOf(supplyAsync(() -> searchWeb(search, V2APIVERSION), getExecutor()), supplyAsync(() -> searchWeb(search, V2APIVERSION), getExecutor())).thenAccept((s) -> results.add((String) s)),
+            anyOf(supplyAsync(() -> searchImage(search, V2APIVERSION), getExecutor()), supplyAsync(() -> searchImage(search, V2APIVERSION), getExecutor())).thenAccept((s) -> results.add((String) s)),
+            anyOf(supplyAsync(() -> searchVideo(search, V2APIVERSION), getExecutor()), supplyAsync(() -> searchVideo(search, V2APIVERSION), getExecutor())).thenAccept((s) -> results.add((String) s))
+        )
     ).get();
+
 
     logEnd(startTime);
     return results.size() < 3 ? "Timeout" : String.join(" : ", results);
@@ -221,6 +220,7 @@ public interface ClientService {
   default void timeout(int milliseconds) {
     try {
       Thread.sleep(milliseconds);
+      logger.info("Timeout");
     }
     catch (InterruptedException e) {
       e.printStackTrace();
